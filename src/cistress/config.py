@@ -20,18 +20,23 @@ class Config:
     # --- group and task -------------------------------------------------
     n_humans: int = 12
     items_per_agent: int = 3
-    n_required: int = 16
+    # Still four times one agent's starting set.  16 sat above the integration
+    # stressed groups actually reached, so they almost never finished and the
+    # adaptive state stayed empty.
+    n_required: int = 12
 
     # --- run length -----------------------------------------------------
-    ticks: int = 800
+    # Long enough that a slow group can finish after the perturbation.  That
+    # late finish is what the adaptive label records.
+    ticks: int = 1000
     perturbation_tick: int = 55
 
     # --- stress schedule ------------------------------------------------
     # Load is the single controlled stressor.  It suppresses transmission and
-    # reception alike, so the two effects compound; the peak is held well below
-    # 1.0 to keep the compounded swing around 5x rather than 60x.
+    # reception alike.  0.45 stalled stressed groups short of the required set;
+    # 0.32 still slows them, but leaves a path to late recovery.
     load_calm: float = 0.10
-    load_peak: float = 0.45
+    load_peak: float = 0.32
     ramp_start: int = 10
     ramp_end: int = 50
 

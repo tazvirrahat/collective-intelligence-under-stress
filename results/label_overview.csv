@@ -1,0 +1,6 @@
+condition,description,stable,adaptive,stressed,broken_down
+C1,"calm, humans",0.259,0.488,0.000,0.253
+C2,"stressed, humans",0.011,0.425,0.257,0.307
+C3,"calm, humans + AI",0.165,0.599,0.010,0.226
+C4,"stressed, humans + AI",0.008,0.382,0.355,0.255
+C5,"stressed, extra human",0.008,0.402,0.319,0.271
