@@ -1,0 +1,90 @@
+Feature window: ticks 0-199.  Runs: 5000.
+Dropped as constant: silent_agents, n_components
+Dropped as duplicate: mean_messages_per_tick
+Model features (12): n_messages, message_rate_slope, gini_sends, activity_ratio, density, degree_centralisation, reciprocity, mean_reciprocation_delay, rolling_variance, lag1_autocorr, ai_accept_rate, ai_traffic_ratio
+Runs that completed inside the feature window: 5
+Broken-down runs caused by a destroyed required item: 1312 of 1312
+
+== Four-class results (train CV macro-F1, then held-out test)
+model                           CV macro-F1   test F1  test acc
+majority class                  0.157+/-0.000     0.157     0.459
+volume only (logistic)          0.274+/-0.007     0.249     0.257
+condition only (logistic)       0.205+/-0.003     0.205     0.271
+logistic regression             0.302+/-0.007     0.316     0.323
+random forest                   0.319+/-0.011     0.341     0.353
+random forest + condition       0.326+/-0.013     0.348     0.359
+info-state ceiling (forest)     0.599+/-0.011     0.641     0.654
+  ceiling, no destroyed flag    0.416+/-0.009     0.457     0.469
+
+-- logistic regression, held-out test, per class
+             precision  recall     F1  support
+stable           0.226   0.800  0.353       90
+adaptive         0.567   0.111  0.186      459
+stressed         0.320   0.777  0.453      188
+broken_down      0.397   0.205  0.271      263
+confusion matrix (rows true, columns predicted, order stable, adaptive, stressed, broken_down)
+     72     8     5     5
+    172    51   185    51
+      1    15   146    26
+     73    16   120    54
+
+-- random forest, held-out test, per class
+             precision  recall     F1  support
+stable           0.233   0.611  0.337       90
+adaptive         0.588   0.196  0.294      459
+stressed         0.335   0.830  0.477      188
+broken_down      0.359   0.198  0.255      263
+confusion matrix (rows true, columns predicted, order stable, adaptive, stressed, broken_down)
+     55    22     2    11
+    122    90   187    60
+      1     9   156    22
+     58    32   121    52
+
+== Within one condition (5-fold CV macro-F1; labels with >= 20 runs)
+       forest logistic   chance   labels
+C1      0.372    0.377    0.327   adaptive, broken_down, stable
+C2      0.361    0.365    0.364   adaptive, broken_down, stressed
+C3      0.364    0.342    0.348   adaptive, broken_down, stable
+C4      0.372    0.314    0.344   adaptive, broken_down, stressed
+C5      0.313    0.352    0.319   adaptive, broken_down, stressed
+
+== Adaptive versus broken down only
+model                           CV macro-F1   test F1
+majority class                  0.389+/-0.000     0.389
+condition only (logistic)       0.531+/-0.022     0.525
+logistic regression             0.555+/-0.022     0.578
+random forest                   0.544+/-0.010     0.560
+info-state ceiling (forest)     1.000+/-0.000     1.000
+
+== Permutation importance, random forest, held-out test (drop in macro-F1)
+n_messages                  0.0195 +/- 0.0115
+activity_ratio              0.0155 +/- 0.0076
+ai_traffic_ratio            0.0126 +/- 0.0047
+ai_accept_rate              0.0081 +/- 0.0046
+gini_sends                  0.0030 +/- 0.0064
+mean_reciprocation_delay    0.0018 +/- 0.0117
+message_rate_slope         -0.0009 +/- 0.0050
+degree_centralisation      -0.0011 +/- 0.0012
+lag1_autocorr              -0.0011 +/- 0.0046
+density                    -0.0022 +/- 0.0012
+rolling_variance           -0.0052 +/- 0.0070
+reciprocity                -0.0158 +/- 0.0076
+
+== Prediction horizon (train-set CV macro-F1)
+window     forest logistic  condition
+55          0.309    0.289      0.205
+100         0.319    0.311      0.205
+150         0.335    0.304      0.205
+200         0.327    0.304      0.205
+
+== Threshold sensitivity (train-set CV macro-F1)
+stable by  depressed    forest  condition   label shares (stable, adaptive, stressed, broken_down)
+350        0.60          0.339      0.149   0.028 0.521 0.188 0.262
+350        0.70          0.338      0.149   0.028 0.521 0.188 0.263
+350        0.80          0.342      0.149   0.028 0.521 0.186 0.265
+450        0.60          0.319      0.205   0.090 0.459 0.188 0.262
+450        0.70          0.333      0.205   0.090 0.459 0.188 0.263
+450        0.80          0.331      0.204   0.090 0.459 0.186 0.265
+550        0.60          0.361      0.265   0.187 0.362 0.188 0.262
+550        0.70          0.362      0.265   0.187 0.362 0.188 0.263
+550        0.80          0.353      0.264   0.187 0.362 0.186 0.265

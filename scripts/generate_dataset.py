@@ -1,8 +1,18 @@
-"""Study dataset: one row per run, written to results/dataset.csv.
+"""Study dataset: one row per run.
 
 Labels are taken from label_distribution.label, which reads only the
-information state. Predictors are taken only from the message log, and only
-from ticks before the perturbation, so they do not contain the outcome.
+information state. Predictors are taken only from the message log, over the
+first FEATURE_WINDOW ticks. That window covers the perturbation and the first
+part of the response to it, and ends before any calibration run completed the
+task, so the outcome has not happened yet when the window closes.
+
+Writes four files under results/:
+
+  dataset.csv         seed, condition, label, predictors at FEATURE_WINDOW
+  horizons.csv        the same predictors at each window in HORIZONS
+  outcomes.csv        information-state quantities, for threshold sensitivity
+                      and diagnostics.  Never used as predictors.
+  label_overview.csv  share of runs in each label, per condition
 
 Seeds start at STUDY_SEED_START and do not overlap the calibration range
 label_distribution.py uses (0-299).
@@ -30,7 +40,16 @@ from label_distribution import STATES, label
 STUDY_SEED_START = 10_000
 RUNS_PER_CONDITION = 1_000
 ROLLING_WINDOW = 10
+FEATURE_WINDOW = 200
+HORIZONS = (55, 100, 150, 200)
+
+# The only message fields the predictors may see.  Item identity and the
+# genuine/fake flag are dropped before feature extraction.
+VISIBLE_FIELDS = ("tick", "sender", "recipient", "accepted", "sender_is_ai")
+
 OUT_PATH = ROOT / "results" / "dataset.csv"
+HORIZONS_PATH = ROOT / "results" / "horizons.csv"
+OUTCOMES_PATH = ROOT / "results" / "outcomes.csv"
 OVERVIEW_PATH = ROOT / "results" / "label_overview.csv"
 
 DESCRIPTIONS = {
@@ -79,7 +98,7 @@ def lag1_autocorr(series: np.ndarray) -> float:
 def features_from_messages(
     messages: list[dict], n_agents: int, window_end: int, ai_present: bool,
 ) -> dict:
-    """Predictors from the pre-perturbation message log. No item identity, no integration."""
+    """Predictors from messages with tick < window_end. No item identity, no integration."""
     window = [m for m in messages if m["tick"] < window_end]
     ai_index = n_agents - 1 if ai_present else None
     ticks = np.arange(window_end)
@@ -203,8 +222,30 @@ def write_overview(counts: dict, runs_per: int) -> None:
             })
 
 
+INTEGER_FEATURES = {"n_messages", "silent_agents", "n_components"}
+
+
+def formatted(row: dict) -> dict:
+    out = {}
+    for key, value in row.items():
+        if key in FEATURE_COLUMNS and key not in INTEGER_FEATURES:
+            out[key] = "" if value != value else "%.4f" % value
+        else:
+            out[key] = value
+    return out
+
+
+def write_csv(path: Path, fields: tuple, rows: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(formatted(row) for row in rows)
+
+
 def main() -> None:
-    rows = []
+    assert FEATURE_WINDOW in HORIZONS
+    rows, horizon_rows, outcome_rows = [], [], []
     counts = {name: {state: 0 for state in STATES} for name in CONDITIONS}
 
     for condition_index, (name, cfg) in enumerate(CONDITIONS.items()):
@@ -213,32 +254,34 @@ def main() -> None:
             run = simulate(cfg, seed, name)
             state = label(run, cfg.n_required)
             counts[name][state] += 1
-            row = {
+            ident = {"seed": seed, "condition": name, "label": state}
+
+            visible = [{key: m[key] for key in VISIBLE_FIELDS} for m in run.messages]
+            for window in HORIZONS:
+                features = features_from_messages(visible, run.n_agents, window, cfg.ai_present)
+                horizon_rows.append({**ident, "window": window, **features})
+                if window == FEATURE_WINDOW:
+                    rows.append({**ident, **features})
+
+            integ = np.asarray(run.integration)
+            hit = np.flatnonzero(integ >= cfg.n_required)
+            outcome_rows.append({
                 "seed": seed,
                 "condition": name,
-                "label": state,
-            }
-            row.update(features_from_messages(
-                run.messages, run.n_agents, cfg.perturbation_tick, cfg.ai_present))
-            rows.append(row)
+                "n_required": cfg.n_required,
+                "completed_at": int(hit[0]) if hit.size else "",
+                "final_integration": int(integ[-1]),
+                "integration_at_window": int(integ[FEATURE_WINDOW - 1]),
+                "n_destroyed_required": len(run.destroyed_required),
+                "unique_items_at_perturbation": run.unique_items_at_perturbation,
+                "removed_originals_unshared": run.removed_originals_unshared,
+            })
         print("finished %s (%d runs)" % (name, RUNS_PER_CONDITION))
 
-    integer_features = {"n_messages", "silent_agents", "n_components"}
-    formatted = []
-    for row in rows:
-        out = {}
-        for key, value in row.items():
-            if key in FEATURE_COLUMNS and key not in integer_features:
-                out[key] = "" if value != value else "%.4f" % value
-            else:
-                out[key] = value
-        formatted.append(out)
-
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with OUT_PATH.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=("seed", "condition", "label", *FEATURE_COLUMNS))
-        writer.writeheader()
-        writer.writerows(formatted)
+    write_csv(OUT_PATH, ("seed", "condition", "label", *FEATURE_COLUMNS), rows)
+    write_csv(HORIZONS_PATH, ("seed", "condition", "label", "window", *FEATURE_COLUMNS),
+              horizon_rows)
+    write_csv(OUTCOMES_PATH, tuple(outcome_rows[0]), outcome_rows)
 
     print("\n%-4s %s" % ("", "  ".join("%-12s" % state for state in STATES)))
     for name in CONDITIONS:
@@ -249,6 +292,8 @@ def main() -> None:
         ))
     write_overview(counts, RUNS_PER_CONDITION)
     print("\nwrote %d rows to %s" % (len(rows), OUT_PATH))
+    print("wrote %d rows to %s" % (len(horizon_rows), HORIZONS_PATH))
+    print("wrote %d rows to %s" % (len(outcome_rows), OUTCOMES_PATH))
     print("wrote the condition summary to %s" % OVERVIEW_PATH)
     last_seed = STUDY_SEED_START + len(CONDITIONS) * RUNS_PER_CONDITION - 1
     print("seeds %d-%d, disjoint from calibration seeds 0-299" % (STUDY_SEED_START, last_seed))

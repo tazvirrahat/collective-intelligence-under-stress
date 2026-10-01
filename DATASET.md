@@ -2,16 +2,24 @@
 
 `results/dataset.csv` is one row per run: 1,000 runs in each of C1–C5, 5,000 rows in total. Seeds run from 10000 through 14999, with C1 on 10000–10999, C2 on 11000–11999, and so on. The same seed with the same condition reproduces the same run.
 
-`results/label_overview.csv` is not a second dataset. It is the study file counted up: for each condition, the share of runs in each label. Open that one when you want the summary table.
+`generate_dataset.py` writes three other files next to it:
 
-Float columns in `dataset.csv` are written to 4 decimal places. A blank cell means the quantity was undefined for that run.
+- `results/label_overview.csv` is the study file counted up: for each condition, the share of runs in each label. Open that one when you want the summary table.
+- `results/horizons.csv` has the same predictors computed over shorter windows, for the prediction-horizon analysis. Four rows per run, one for each `window` value (55, 100, 150, 200). The rows with `window` = 200 are identical to `dataset.csv`.
+- `results/outcomes.csv` holds information-state numbers for each run: when it completed, final integration, integration at tick 199, how many required items were destroyed, and how many items were held by a single agent at the removal. These are what the labels are built from, so they must never be used as predictors. `train_models.py` uses them only to recompute labels at other thresholds and for the "information-state ceiling" comparison.
+
+Float columns are written to 4 decimal places. A blank cell means the quantity was undefined for that run.
 
 ## Where the two halves come from
 
 A run keeps two records.
 
 - Integration is how many of the 12 required items sit on the best-informed living agent's desk at each tick. The label is computed only from this, plus whether the removed agent took any required item with them.
-- The message log is who sent what to whom. Every predictor below is computed only from messages with `tick < 55`. Tick 55 is when one human agent is removed, so these numbers are from before the disruption. None of them use item identity or the integration curve.
+- The message log is who sent what to whom. Every predictor below is computed only from messages with `tick < 200`. One human agent is removed at tick 55, so the window covers the ticks before the removal and 145 ticks of the group's response. Only 5 of the 5,000 runs finished the task inside that window, so the outcome is almost always still open when the window closes.
+
+Before any predictor is computed, each message is cut down to five fields: tick, sender, recipient, whether it was accepted, and whether the sender was the AI. The feature code never sees which item was sent or whether it was a fake.
+
+Every broken-down run in this dataset is broken down because a required item was lost at the removal. The 60% rule below never decided a label at these settings.
 
 ## Identifiers
 
@@ -33,11 +41,13 @@ Checked in this order.
 
 ## Predictors
 
-All of these are from the pre-removal message log (ticks 0–54).
+All of these are from the message log for ticks 0–199.
+
+Three columns carry no information at these settings, and `train_models.py` drops them. `silent_agents` is 0 and `n_components` is 1 in every run. `mean_messages_per_tick` is `n_messages` divided by a fixed number, so it repeats it.
 
 **n_messages.** How many messages were sent in that window.
 
-**mean_messages_per_tick.** `n_messages / 55`.
+**mean_messages_per_tick.** `n_messages / 200` (divided by the `window` value in `horizons.csv`).
 
 **message_rate_slope.** Slope of a straight line fit to the number of messages per tick. Negative means the group was sending less as the window went on.
 
