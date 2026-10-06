@@ -13,6 +13,7 @@ The question is whether the early message log says anything about how the run en
 | `scripts/label_distribution.py` | Calibration check. Prints label shares for seeds 0–299 and does not write a file |
 | `scripts/generate_dataset.py` | Writes the study dataset and the files beside it |
 | `scripts/train_models.py` | Baselines, classifiers, and every analysis in the paper's results section |
+| `scripts/luck_check.py` | Supplementary check: how much of breakdown is decided by the random draw of who is removed? |
 | `scripts/calm_size_control.py` | Supplementary check: is the calm AI effect the AI, or the thirteenth member? |
 | `results/dataset.csv` | 5,000 runs, one row each: label and predictors |
 | `results/horizons.csv` | The same predictors over shorter windows |

@@ -84,7 +84,10 @@ message log. A random forest reached a held-out macro-F1 of 0.34, against
 condition the features did little better than chance. Every broken-down run
 traced to a required item that only the removed member had held. In this
 model, whether a group breaks down is settled mainly by which member it
-loses, not by how it communicated beforehand.
+loses, not by how it communicated beforehand. The model is a prototype: it
+fixes the labels, features and effect sizes that a study with human
+volunteers would need, and it locates the one design choice, random removal
+of a member, that such a study should replace.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -157,7 +160,9 @@ structural and is traced in Section~V: breakdown in this model is decided at
 the moment of the perturbation by whether the lost member held something no
 one else did. Section~II reviews the literature, Section~III describes the
 methodology as implemented, Section~IV reports results, and Sections~V and~VI
-discuss them and set out what should change next.
+discuss them and set out what should change next. Throughout, the model is
+treated as a prototype of an experiment with human volunteers, not as a
+substitute for one; Section~VI makes the case for that experiment.
  
 \section{Literature Review}
  
@@ -1054,8 +1059,24 @@ the agent removed at tick 55 was the only holder of a required item. The
 removed agent is chosen at random. A group's communication before tick 55
 decides how many items are still exposed---stressed groups left more---but
 not which agent is lost. Even a perfect observer of the message log could
-learn only the odds of breakdown, not whether it would happen. The
-information-state ceiling makes the same point from the other side: it
+learn only the odds of breakdown, not whether it would happen.
+
+This was checked directly rather than assumed. On 300 further runs per
+condition, the state of every group at tick 55 was used to compute the
+probability that a random removal would destroy a required item. That
+probability averaged 0.27 and the realised breakdown rate was 0.28, so the
+rule is behaving as described. It was almost never close to 0 or 1 (in 1 per
+cent of runs), which means nearly every group was exposed and the draw alone
+decided which ones paid. Used as a score, it separated broken-down runs from
+the rest with an AUC of only 0.65. Its squared error was 0.187, against 0.186
+expected from the draw alone and 0.199 for always guessing the base rate.
+Even an observer who sees every desk in the group, and not merely the message
+log, therefore has almost no information beyond the odds. The result does not
+say that the simulation made no progress: stress effects on completion are
+large and consistent. It says that the breakdown label, as designed, is
+mostly a coin flip.
+
+The information-state ceiling makes the same point from the other side: it
 reached 0.641 only because it was handed the destroyed-item flag, and fell
 to 0.457 without it.
 
@@ -1087,7 +1108,12 @@ precede.
 \textit{Agent realism.} Rule-based agents have no emotion, misunderstanding,
 or status concern. The study models the structure of information flow under
 load, not human psychology, and results transfer to human groups only as
-hypotheses requiring separate empirical test.
+hypotheses requiring separate empirical test. The model is a prototype of
+that test. Its simulated humans are also the ones being removed, so the
+outcome rests on a random draw over agents whose only differences are the
+items they happen to hold; real members differ in role, memory and habit, and
+whether they differ in ways that make loss predictable is an empirical
+question this model cannot answer.
 
 \textit{Self-referential validation.} Both data and labels originate in the
 same simulation. The label--feature separation, the reserved calibration
@@ -1134,6 +1160,45 @@ the trust weight could then be swept to model over- and under-reliance.
 \emph{Parameter sweeps}: group size, items per agent and the timing of the
 perturbation should be varied in the study data itself, not only during
 calibration.
+
+\subsection{The Case for Volunteer Studies}
+
+The prototype is useful mainly for what it lets a human study skip. Labels,
+thresholds, the 5{,}000-run feature pipeline and a sensitivity analysis are
+written and frozen, so a volunteer study can be pre-registered with its
+analysis already built. Its effect sizes give a planning basis: stress cut
+early completion from about 26 to 1 per cent, so that effect is large enough
+to detect with a few dozen groups, whereas the 5-point difference in
+breakdown with and without stress would need several hundred. Four reasons
+make volunteers the right next step.
+
+\emph{The weakest point is the one volunteers change.} Breakdown here is a
+draw over rule-based agents with no capacity to anticipate loss. People
+rehearse, repeat, note who knows what and re-share before they are told to.
+Whether groups of volunteers build the redundancy this model fails to build,
+and whether that makes breakdown avoidable and therefore predictable, is the
+open question, and only people can answer it.
+
+\emph{Stress becomes a manipulation, not a parameter.} Time pressure, noise
+or competing tasks can be applied to real members, separated from one
+another as recommended in \cite{mojzisch2025}, and compared against a calm
+control, which a load parameter cannot do.
+
+\emph{The perturbation can be made causal and fair.} Random disconnection of
+one volunteer, or a targeted one chosen by activity or by what they hold, is
+an assignment the experimenter controls. Pairing each stressed group with an
+unperturbed twin, as suggested above, separates the effect of the loss from
+slow completion.
+
+\emph{The AI can be given a real cost.} A scripted assistant that is wrong a
+fixed share of the time, trusted or distrusted by the volunteers themselves,
+replaces the assumed trust weight with a measured one, and answers whether the
+penalty reported for human--AI teams \cite{vaccaro2024} grows under stress.
+
+Such a study does not need the model to be right. It needs the model to have
+asked a well-formed question, and to have shown which parts of the question
+a simulation can settle and which it cannot. Results from volunteers should
+be reported against this prototype's negative result, whichever way they go.
 
 The larger aim stands: to treat collective intelligence as a trajectory and
 to define failure carefully enough to predict it. What this study adds is a
