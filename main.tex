@@ -79,15 +79,14 @@ each run. Five conditions cross stress with the presence of a load-immune,
 imperfectly reliable AI participant, with a size control. Each of 5{,}000
 runs was labelled stable, adaptive, stressed or broken down from the
 information state alone, and described by twelve features taken only from the
-message log. A random forest reached a held-out macro-F1 of 0.34, against
-0.21 for a model that knows only the condition, but within any single
-condition the features did little better than chance. Every broken-down run
-traced to a required item that only the removed member had held. In this
-model, whether a group breaks down is settled mainly by which member it
-loses, not by how it communicated beforehand. The model is a prototype: it
-fixes the labels, features and effect sizes that a study with human
-volunteers would need, and it locates the one design choice, random removal
-of a member, that such a study should replace.
+message log. This is a prototype, and its predictive result is limited. A
+random forest reached a held-out macro-F1 of 0.34, against 0.21 for a model
+that knows only the condition, but the gain comes from telling calm groups
+from stressed ones. The features did not separate stressed groups from
+broken-down ones, and within any single condition they did little better than
+chance. Every broken-down run traced to a required item that only the removed
+member had held, so in this model breakdown is settled mainly by which member
+is lost, not by how the group communicated beforehand.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -106,20 +105,24 @@ collective performance roughly twice as strongly as the skill of its
 individual members \cite{riedl2021}. How a group interacts matters more than
 who is in it.
  
-Almost all of this evidence, however, comes from quiet rooms. Participants
+Much of this evidence, however, comes from quiet rooms. Participants
 are strangers, sessions last about an hour, and nothing goes wrong. The
 settings in which collective intelligence actually matters are the opposite:
 epidemic response, flood evacuation, emergency resource allocation. In these
 environments, groups face uncertainty, information overload, resource
 scarcity and disrupted communication channels. Under such conditions a group
-may reorganise and cope, or it may fragment. No current model predicts which.
+may reorganise and cope, or it may fragment. Existing work offers only
+limited help in telling which, because it mostly measures calm groups once.
+This paper addresses one narrow part of that problem: groups that must share
+information to reach a decision, disrupted in a controlled way inside a
+simulation.
  
 The question has become more pressing because groups increasingly contain
 artificial agents. That addition is not obviously beneficial. The largest
 synthesis available reports that combining humans and AI often produces worse
 decisions than the better party would have produced alone \cite{vaccaro2024}.
-Whether this penalty grows or shrinks under stress is unknown, because the
-underlying experiments were not conducted under stress.
+The underlying experiments were not conducted under stress, so it is not
+known from them whether this penalty grows or shrinks under stress.
  
 \subsection{Research Objectives}
  
@@ -131,8 +134,8 @@ information, across four conditions crossing stress with AI participation.
 of collective breakdown grounded in information integration and recovery,
 independent of the interaction features used for prediction.
  
-\textit{3) Identify structural indicators:} isolate features of the
-interaction record that precede adaptation or breakdown.
+\textit{3) Test structural indicators:} test whether features of the
+interaction record carry information about adaptation or breakdown.
  
 \textit{4) Predict transitions:} train and evaluate models that classify
 group state from early interaction structure, and report honestly whether
@@ -140,38 +143,38 @@ adaptation and breakdown are separable at all.
  
 \subsection{Significance and Innovation}
  
-The contribution is to treat collective intelligence as a trajectory rather
-than a score, and to treat the definition of failure as a research problem
-rather than an assumption. Existing measurement yields one number describing
-how a group performed. This study models the group as an evolving interaction
-structure and asks what state it will occupy next, so that intervention
-becomes possible before failure rather than diagnosis after it.
+This study treats collective intelligence as a trajectory rather than a
+score, and treats the definition of failure as something to be specified
+rather than assumed. Existing measurement yields one number describing how a
+group performed. Here the group is modelled as an evolving interaction
+structure, and the study is a single test: whether early interaction
+structure contains predictive information about a group's later state. It
+does not claim to provide a method for intervening in real groups.
 
 \subsection{Summary of Findings}
 
-The model was built, calibrated on reserved seeds, and used to generate
-5{,}000 labelled runs. Stress had a clear effect on outcomes: it almost
-eliminated early completion and pushed a quarter to a third of runs into
-prolonged partial integration. Classifiers trained on the early message log
-beat every naive baseline, but most of what they learned was which
-condition a run belonged to. Within a condition, and between adaptation and
-breakdown in particular, they did little better than chance. The reason is
-structural and is traced in Section~V: breakdown in this model is decided at
-the moment of the perturbation by whether the lost member held something no
-one else did. Section~II reviews the literature, Section~III describes the
-methodology as implemented, Section~IV reports results, and Sections~V and~VI
-discuss them and set out what should change next. Throughout, the model is
-treated as a prototype of an experiment with human volunteers, not as a
-substitute for one; Section~VI makes the case for that experiment.
- 
+The model was calibrated on reserved seeds and used to generate 5{,}000
+labelled runs. Stress had a clear effect on outcomes: it almost eliminated
+early completion and left a quarter to a third of runs stalled. Classifiers
+trained on the early message log beat every baseline, but they distinguished
+calm groups from stressed ones and did not distinguish stressed groups from
+broken-down ones. Within a condition, and between adaptation and breakdown,
+they did little better than chance. The reason is traced in Section~V:
+breakdown in this model is decided at the moment of the perturbation, by
+whether the lost member held something no one else did. Section~II reviews the
+literature, Section~III describes the methodology as implemented, Section~IV
+reports results, Section~V discusses them, and Sections~VI and~VII give the
+conclusion and future work. The model is a prototype of an experiment with
+human volunteers and does not replace one.
+
 \section{Literature Review}
  
 Research bearing on this study is distributed across communities that
 rarely cite one another: the psychometric measurement of collective
 intelligence, organisational research on teams under stress, human--AI
 interaction, network science, and the complex-systems literature on critical
-transitions. This review synthesises them thematically and locates the gap at
-their intersection.
+transitions. This review synthesises them thematically and notes where they leave
+the present question open.
  
 \subsection{Scope and Search Strategy}
  
@@ -219,9 +222,8 @@ whether a general factor exists.
 What both camps share is more consequential here. Collective
 intelligence is treated throughout as a quantity a group possesses: a score
 obtained from a single session, under conditions deliberately kept calm,
-among strangers with no prior history. A score describes an endpoint. It
-cannot describe a trajectory, and it cannot indicate when a group began to
-fail.
+among strangers with no prior history. A score describes an endpoint, and says
+little about how the group reached it or when it began to fail.
  
 \subsection{Stress and the Loss of Shared Knowledge}
  
@@ -231,9 +233,9 @@ degraded shared mental models and transactive memory---the distributed
 awareness of who knows what---and that degradation statistically explained
 the resulting performance loss. The failure was structural rather than
 motivational: members continued working, but the group's shared
-representation of its own knowledge came apart. This identifies what to
-measure. If stress destroys the routing of knowledge rather than the effort
-of individuals, breakdown should be observable as a failure of information to
+representation of its own knowledge came apart. This suggests what to
+measure. If stress disrupts the routing of knowledge rather than the effort
+of individuals, breakdown may be observable as a failure of information to
 reach the members who need it.
  
 The wider stress literature is considerably less consistent. Threat-rigidity
@@ -287,9 +289,9 @@ combinations performed on average worse than whichever of the two performed
 better alone. Losses concentrated in decision-making tasks while gains
 appeared in content creation, and design features in which the field has
 invested heavily---displaying explanations, showing model confidence---did
-not moderate the outcome. Two properties of that corpus define the gap this
-study enters: it is overwhelmingly dyadic, pairing a single person with a
-single model, and it contains almost no sustained stress.
+not moderate the outcome. Two properties of that corpus bear on this study: it is largely
+dyadic, pairing a single person with a single model, and it contains little
+sustained stress.
  
 Burton et al.\ \cite{burton2024} identify a failure mode specific to the
 collective level. When many members of a group consult the same small number
@@ -304,14 +306,14 @@ networks under human-only, AI-only and mixed configurations, they found that
 AI-only networks initially produced work rated more creative and more
 diverse, but that mixed networks overtook them on diversity across successive
 iterations. A single measurement taken at either end of that experiment would
-have supported the opposite conclusion, which constitutes a direct argument
-for temporal modelling.
+have supported the opposite conclusion, which suggests that the time at which
+a group is measured matters.
  
-Taken together, these findings suggest a mechanism worth testing rather than
-assuming. An artificial participant does not experience stress and does not
+Taken together, these findings suggest a mechanism that could be tested but
+should not be assumed. An artificial participant does not experience stress and does not
 reduce its output as load rises. Its contributions therefore occupy a growing
 share of group communication precisely when human members are least able to
-scrutinise them. If that agent is imperfectly reliable, stress should amplify
+scrutinise them. If that agent is imperfectly reliable, stress may amplify
 the propagation of its errors.
  
 \subsection{Network Structure and Position}
@@ -327,8 +329,8 @@ decentralised and informationally inefficient networks tend to outperform
 densely connected ones, because slower information flow protects unusual
 ideas long enough for them to be evaluated rather than suppressed. Cui and
 Yasseri \cite{cui2024} formalise such collectives as multilayer networks
-with distinct cognition, physical and information layers, the closest
-existing formalism to the representation required here. The size of the
+with distinct cognition, physical and information layers, a possible
+formalism for the representation used here. The size of the
 units in which people interact also matters: Iacopini et al.\
 \cite{iacopini2022} show that interactions in groups, rather than in pairs,
 change how large a committed minority must be before a population tips to a
@@ -345,11 +347,10 @@ government actors \cite{gonzalo2023}.
 Two technical literatures supply the modelling apparatus. Temporal graph
 learning has matured rapidly, with memory-based architectures such as
 Temporal Graph Networks \cite{rossi2020} maintaining per-node state updated
-by each interaction. These models are well benchmarked, but almost entirely
-on dynamic link prediction and anomaly detection. Classifying the state of an
-entire graph as it evolves---which is what the question ``is this group
-stable, adapting, or breaking down?'' amounts to---remains comparatively
-undeveloped.
+by each interaction. These models are mostly benchmarked on dynamic link prediction and anomaly
+detection. Classifying the state of an entire graph as it evolves, which is
+what the question ``is this group stable, adapting, or breaking down?''
+amounts to, received less attention in the work reviewed here.
  
 Early-warning-signal theory supplies the other half. George et al.\
 \cite{george2023} review critical slowing down: as a system approaches a
@@ -410,7 +411,7 @@ Human--AI evidence dyadic, unstressed \cite{vaccaro2024,burton2024}
 & Multi-agent groups with a load-immune, imperfectly reliable AI participant \\
 Structure known to matter but not tracked under load \cite{shirado2017,centola2022}
 & Full message log retained; structure computed from it over any window \\
-No operational definition of breakdown, hence no training labels
+No operational definition of breakdown found, hence no training labels
 & Breakdown defined from integration after a controlled perturbation \\
 Simulated data lacks validation \cite{larooij2025}
 & Thresholds fixed on reserved seeds; labels and features kept strictly separate \\
@@ -421,7 +422,7 @@ Simulated data lacks validation \cite{larooij2025}
 \subsection{Research Gaps and Unique Contributions}
  
 Table~\ref{tab:gaps} maps the gaps identified above onto the design decisions
-that follow from them. Four contributions result.
+that follow from them. Four limited contributions result.
  
 \textit{1) Structural observation under load:} the group is represented as a
 temporal interaction structure and observed while stress is applied, so that
@@ -432,9 +433,9 @@ a final score.
 broken down when the information required for the correct answer can no
 longer be assembled by any member following a controlled perturbation.
 Stable, adaptive and stressed states are defined by the same measure at
-differing levels of severity and recovery. Because the standard
-literature offers no such definition, producing a defensible one is treated
-as a contribution in its own right rather than a preliminary step.
+differing levels of severity and recovery. No such definition
+was found in the literature reviewed, so producing one is treated as part of
+the study's contribution.
  
 \textit{3) Separation of labels from features:} outcome labels derive
 exclusively from which required information items arrived and when;
@@ -442,11 +443,10 @@ predictive features derive exclusively from the message log. This separation
 prevents the circularity that would otherwise inflate accuracy without
 establishing anything.
  
-\textit{4) An honest test of separability:} the study reports whether
-adaptation and breakdown can in fact be distinguished from early interaction
-structure. A negative result---that the two are not separable at the horizons
-examined---was planned for as a legitimate outcome, and it is the result
-obtained.
+\textit{4) A test of separability:} the study reports whether adaptation
+and breakdown can be distinguished from early interaction structure. A
+negative result, that the two are not separable at the horizons examined, was
+planned for as a possible outcome, and it is the result obtained.
  
 \section{Methodology}
  
@@ -625,11 +625,23 @@ information lies in what follows.
 In human+AI conditions the removed agent is always human, so that AI presence
 is held constant across the perturbation.
 
-One consequence of the random choice needs stating plainly, because it turns
-out to dominate the results. If the removed agent was, at tick 55, the only
-holder of any required item, the correct option can never be assembled in
-that run.
- 
+\subsection{A Consequence of Random Removal}
+
+One consequence of the random choice needs stating plainly, because it
+dominates the results. Every item starts with exactly one holder and spreads
+only by transmission, so at tick 55 many items are still held by a single
+agent. The agent removed is drawn without regard to what it holds. If it was
+the only holder of any required item, the correct option can never be
+assembled in that run, whatever the group does in the remaining 745 ticks.
+
+Two things follow. First, a ``broken down'' label records an event at tick
+55, not a failure of coordination afterwards. Second, the group's behaviour
+before the perturbation sets only the odds of that event: a group that passed
+on more items leaves fewer exposed, but nothing it does determines which
+agent is drawn. An observer of the message log, however good, can recover the
+odds and not the draw. Sections~IV and~V quantify how much of the outcome this
+accounts for.
+
 \subsection{Outcome Labelling}
  
 Labels are derived exclusively from the information state and never from the
@@ -709,7 +721,7 @@ Section~II-F, that adaptation and breakdown differ in what follows the
 disruption rather than in the disruption itself. A window much longer would
 start to overlap the outcome: in the study data only 5 of 5{,}000 runs
 completed the task inside the first 200 ticks. The window length was chosen
-on calibration seeds, and the prediction-horizon analysis in Section~III-J
+on calibration seeds, and the prediction-horizon analysis in Section~III-K
 reports every shorter window as well.
 
 Five families are extracted:
@@ -871,6 +883,16 @@ reported below. Re-running both regenerates every number in Section~IV.
 
 \section{Results}
 
+The models told calm groups from stressed ones. They did not tell stressed
+groups from broken-down ones. On four-class macro-F1 they beat every
+baseline, 0.341 for the random forest against 0.249 for message volume alone
+and 0.205 for the condition alone, but almost all of that gain is the level of
+stress showing through: stable runs occur almost only in calm conditions and
+stalled runs almost only under stress. Within a single condition the models
+were near chance, and between adaptive and broken-down runs they improved on
+the condition alone by only 0.03 to 0.05. The subsections below give the
+evidence.
+
 \subsection{The Dataset}
 
 Table~\ref{tab:labels} gives the share of runs in each state. Stress had the
@@ -945,6 +967,9 @@ Table~\ref{tab:models} reports the main comparison. Both feature models beat
 the majority-class floor and the volume-only baseline, which was the
 planned test of whether structure adds anything to activity. The random
 forest reached a held-out macro-F1 of 0.341 against 0.249 for volume alone.
+This gain reflects the ability to tell calm from stressed runs, not the
+ability to tell stressed from broken-down runs, as the per-class results
+below show.
 
 \begin{table}[t]
 \caption{Four-Class Results. CV: Mean $\pm$ SD Macro-F1 Over Five Folds of
@@ -1136,16 +1161,31 @@ unreliability had little room to matter. The absence of a clear AI effect
 under stress should not be read as evidence that unreliable AI is harmless
 to stressed groups.
 
-\section{Conclusion and Future Work}
+\section{Conclusion}
 
-This study built an agent-based model of a group pooling information under
-stress, with and without an artificial participant, and asked whether the
-group's early message log indicates whether it will adapt to losing a member
-or break down. Stress had a clear and consistent effect on outcomes.
-Classifiers on the message log beat all planned baselines, but most of what
-they learned was the level of stress, and within a condition they were
-close to chance. Every breakdown traced to the random loss of a member who
-held something no one else had.
+This study tested whether the early message log of a simulated group, pooling
+distributed information under stress, contains information about how the group
+fares after it loses a member. It does so only for the level of stress.
+
+Stress cut early completion in human-only groups from about 26 to 1 per cent
+and left a quarter to a third of runs stalled. Classifiers on twelve
+message-log features beat the baselines on four-class macro-F1 (0.341 against
+0.249 for message volume and 0.205 for the condition alone), recognising
+stable and stalled runs well (recall of 61 and 83 per cent for the forest) and
+adaptive and broken-down runs poorly (about 20 per cent each). Within a single
+condition they were within 0.05 of chance. No structural or instability
+feature had a measurable effect on the score.
+
+All 1{,}312 broken-down runs were caused by the random removal destroying a
+required item. A check using the full state of each group at the perturbation,
+not only the message log, separated broken-down runs from the rest with an
+AUC of 0.65, so most of the label reflects which member was drawn. The AI
+participant made no clear difference under stress, and its apparent effect
+in calm conditions was mostly group size. These results come from one
+configuration of a rule-based prototype and are not evidence about human
+groups.
+
+\section{Future Work}
 
 Four changes follow directly. \emph{Targeted perturbation}: removing the
 most active or best-informed member, rather than a random one, would make
@@ -1161,7 +1201,7 @@ the trust weight could then be swept to model over- and under-reliance.
 perturbation should be varied in the study data itself, not only during
 calibration.
 
-\subsection{The Case for Volunteer Studies}
+\subsection{Studies with Human Volunteers}
 
 The prototype is useful mainly for what it lets a human study skip. Labels,
 thresholds, the 5{,}000-run feature pipeline and a sensitivity analysis are
@@ -1200,11 +1240,7 @@ asked a well-formed question, and to have shown which parts of the question
 a simulation can settle and which it cannot. Results from volunteers should
 be reported against this prototype's negative result, whichever way they go.
 
-The larger aim stands: to treat collective intelligence as a trajectory and
-to define failure carefully enough to predict it. What this study adds is a
-worked example of how the definition of failure can decide the answer
-before any model is trained.
- 
+
 \begin{thebibliography}{00}
 \ifdefined\realieee\else\small\fi
 \setlength{\itemsep}{6pt}
